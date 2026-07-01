@@ -13,6 +13,7 @@ if str(BASE_DIR.parent) not in sys.path:
 
 from backend.app.db.base import Base  # noqa: E402
 from backend.app.core.config import get_settings  # noqa: E402
+import backend.app.models  # noqa: E402,F401
 
 
 config = context.config
