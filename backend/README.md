@@ -5,6 +5,9 @@ FastAPI backend scaffold for School Sphere.
 ## What is included
 
 - Application settings
+- Database, Redis, and Celery foundation
+- JWT/password security helpers
+- Alembic migration scaffold
 - Health check endpoint
 - API router structure
 - CI-friendly source layout
