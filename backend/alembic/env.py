@@ -16,6 +16,7 @@ from backend.app.core.config import get_settings  # noqa: E402
 import backend.app.models  # noqa: E402,F401
 import backend.app.auth_models  # noqa: E402,F401
 import backend.app.admin_models  # noqa: E402,F401
+import backend.app.student_models  # noqa: E402,F401
 
 
 config = context.config

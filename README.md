@@ -33,7 +33,7 @@ The platform digitizes core school workflows, including:
 | Layer | Technology |
 | --- | --- |
 | Mobile App | React Native + Expo |
-| Language | Dart |
+| Language | TypeScript |
 | Backend | FastAPI |
 | Backend Language | Python |
 | Database | MySQL |

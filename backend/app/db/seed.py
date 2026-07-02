@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 
 from sqlalchemy.orm import Session
 
@@ -14,6 +14,7 @@ from ..models import (
     PaymentStatus,
     SchoolClass,
     Student,
+    TimetableEntry,
     Subject,
     Teacher,
     User,
@@ -93,6 +94,26 @@ def seed_demo_data(session: Session) -> None:
                 paid_amount=5000.0,
                 due_date=date.today() + timedelta(days=30),
                 status=PaymentStatus.PENDING,
+            ),
+            TimetableEntry(
+                school_class=school_class,
+                subject=subject,
+                teacher=teacher,
+                day_of_week=0,
+                start_time=time(9, 0),
+                end_time=time(9, 45),
+                room="A1",
+                notes="Mathematics period",
+            ),
+            TimetableEntry(
+                school_class=school_class,
+                subject=subject,
+                teacher=teacher,
+                day_of_week=2,
+                start_time=time(11, 0),
+                end_time=time(11, 45),
+                room="A1",
+                notes="Mathematics practice",
             ),
         ]
     )

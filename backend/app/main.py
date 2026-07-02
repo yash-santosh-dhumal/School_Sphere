@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .api.routes.admin import router as admin_router
 from .api.routes.auth import router as auth_router
+from .api.routes.student import router as student_router
 from .api.routes.users import router as users_router
 from .api.routes.health import router as health_router
 from .core.config import get_settings
@@ -33,6 +34,7 @@ app.include_router(health_router, prefix=settings.api_v1_prefix)
 app.include_router(auth_router, prefix=settings.api_v1_prefix)
 app.include_router(users_router, prefix=settings.api_v1_prefix)
 app.include_router(admin_router, prefix=settings.api_v1_prefix)
+app.include_router(student_router, prefix=settings.api_v1_prefix)
 
 
 @app.get("/")

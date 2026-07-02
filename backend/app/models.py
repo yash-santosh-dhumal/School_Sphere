@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, time
 from enum import StrEnum
 
-from sqlalchemy import Date, DateTime, Enum, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Date, DateTime, Enum, Float, ForeignKey, Integer, String, Text, Time, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db.base import Base
@@ -58,6 +58,7 @@ class SchoolClass(Base, TimestampMixin):
     students: Mapped[list[Student]] = relationship(back_populates="school_class")
     assignments: Mapped[list[Assignment]] = relationship(back_populates="school_class")
     examinations: Mapped[list[Examination]] = relationship(back_populates="school_class")
+    timetable_entries: Mapped[list[TimetableEntry]] = relationship(back_populates="school_class")
 
     __table_args__ = (UniqueConstraint("name", "section", "academic_year", name="uq_school_class_identity"),)
 
@@ -75,6 +76,7 @@ class Teacher(Base, TimestampMixin):
     assignments: Mapped[list[Assignment]] = relationship(back_populates="teacher")
     examinations: Mapped[list[Examination]] = relationship(back_populates="teacher")
     notices: Mapped[list[Notice]] = relationship(back_populates="author")
+    timetable_entries: Mapped[list[TimetableEntry]] = relationship(back_populates="teacher")
 
 
 class Student(Base, TimestampMixin):
@@ -104,6 +106,7 @@ class Subject(Base, TimestampMixin):
     name: Mapped[str] = mapped_column(String(150), nullable=False)
 
     examinations: Mapped[list[Examination]] = relationship(back_populates="subject")
+    timetable_entries: Mapped[list[TimetableEntry]] = relationship(back_populates="subject")
 
 
 class Assignment(Base, TimestampMixin):
@@ -206,3 +209,22 @@ class FeeRecord(Base, TimestampMixin):
     status: Mapped[PaymentStatus] = mapped_column(Enum(PaymentStatus), default=PaymentStatus.PENDING, nullable=False)
 
     student: Mapped[Student] = relationship(back_populates="fee_records")
+
+
+class TimetableEntry(Base, TimestampMixin):
+    __tablename__ = "timetable_entries"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    class_id: Mapped[int] = mapped_column(ForeignKey("school_classes.id", ondelete="CASCADE"), nullable=False)
+    subject_id: Mapped[int] = mapped_column(ForeignKey("subjects.id", ondelete="CASCADE"), nullable=False)
+    teacher_id: Mapped[int] = mapped_column(ForeignKey("teachers.id", ondelete="SET NULL"), nullable=True)
+    day_of_week: Mapped[int] = mapped_column(Integer, nullable=False)
+    start_time: Mapped[time] = mapped_column(Time, nullable=False)
+    end_time: Mapped[time] = mapped_column(Time, nullable=False)
+    room: Mapped[str | None] = mapped_column(String(50))
+    notes: Mapped[str | None] = mapped_column(Text)
+
+    school_class: Mapped[SchoolClass] = relationship(back_populates="timetable_entries")
+    subject: Mapped[Subject] = relationship(back_populates="timetable_entries")
+    teacher: Mapped[Teacher | None] = relationship(back_populates="timetable_entries")
+
