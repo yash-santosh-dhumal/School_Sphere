@@ -27,6 +27,15 @@ class PaymentStatus(StrEnum):
     OVERDUE = "overdue"
 
 
+class NotificationType(StrEnum):
+    ASSIGNMENT = "assignment"
+    EXAM = "exam"
+    FEE = "fee"
+    ATTENDANCE = "attendance"
+    ANNOUNCEMENT = "announcement"
+    SYSTEM = "system"
+
+
 class TimestampMixin:
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
@@ -45,6 +54,7 @@ class User(Base, TimestampMixin):
 
     student_profile: Mapped[Student | None] = relationship(back_populates="user", uselist=False)
     teacher_profile: Mapped[Teacher | None] = relationship(back_populates="user", uselist=False)
+    notifications: Mapped[list[Notification]] = relationship(back_populates="user")
 
 
 class SchoolClass(Base, TimestampMixin):
@@ -227,4 +237,17 @@ class TimetableEntry(Base, TimestampMixin):
     school_class: Mapped[SchoolClass] = relationship(back_populates="timetable_entries")
     subject: Mapped[Subject] = relationship(back_populates="timetable_entries")
     teacher: Mapped[Teacher | None] = relationship(back_populates="timetable_entries")
+
+
+class Notification(Base, TimestampMixin):
+    __tablename__ = "notifications"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    type: Mapped[NotificationType] = mapped_column(Enum(NotificationType), nullable=False)
+    is_read: Mapped[bool] = mapped_column(default=False, nullable=False)
+
+    user: Mapped[User] = relationship(back_populates="notifications")
 

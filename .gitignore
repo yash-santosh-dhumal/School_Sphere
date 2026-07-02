@@ -23,6 +23,11 @@ build/
 .vscode/
 .idea/
 
+# Database
+*.db
+*.sqlite3
+*.sqlite
+
 # Flutter / mobile
 mobile/.dart_tool/
 mobile/.pub/
