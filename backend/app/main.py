@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .api.routes.admin import router as admin_router
 from .api.routes.auth import router as auth_router
 from .api.routes.notifications import router as notifications_router
+from .api.routes.reports import router as reports_router
 from .api.routes.student import router as student_router
 from .api.routes.teacher import router as teacher_router
 from .api.routes.users import router as users_router
@@ -39,6 +40,7 @@ app.include_router(admin_router, prefix=settings.api_v1_prefix)
 app.include_router(student_router, prefix=settings.api_v1_prefix)
 app.include_router(teacher_router, prefix=settings.api_v1_prefix)
 app.include_router(notifications_router, prefix=settings.api_v1_prefix)
+app.include_router(reports_router, prefix=settings.api_v1_prefix)
 
 
 @app.get("/")
