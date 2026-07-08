@@ -1,6 +1,6 @@
-# School Sphere
+# EduPulse
 
-School Sphere is a cloud-based School Management System designed to simplify academic and administrative operations for students, teachers, and administrators.
+EduPulse is a cloud-based School Management System designed to simplify academic and administrative operations for students, teachers, and administrators.
 
 **Version:** 1.0  
 **Prepared By:** Yash Dhumal  

@@ -87,7 +87,7 @@ def seed_demo_data(session: Session) -> None:
         [
             Attendance(student=student, date=date.today(), status=AttendanceStatus.PRESENT, teacher_id=teacher.id),
             Mark(examination=exam, student=student, marks=92.0, grade="A+"),
-            Notice(author=teacher, title="Welcome to School Sphere", body="Demo notice for the seeded database."),
+            Notice(author=teacher, title="Welcome to EduPulse", body="Demo notice for the seeded database."),
             FeeRecord(
                 student=student,
                 total_amount=15000.0,

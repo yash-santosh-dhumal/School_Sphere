@@ -1,1 +1,1 @@
-"""School Sphere backend application package."""
+"""EduPulse backend application package."""

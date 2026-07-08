@@ -1,6 +1,6 @@
 # Backend
 
-FastAPI backend scaffold for School Sphere.
+FastAPI backend scaffold for EduPulse.
 
 ## What is included
 

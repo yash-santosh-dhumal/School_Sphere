@@ -1,6 +1,6 @@
-# School Sphere Mobile
+# EduPulse Mobile
 
-React Native app scaffolded with Expo for School Sphere.
+React Native app scaffolded with Expo for EduPulse.
 
 ## What is included
 

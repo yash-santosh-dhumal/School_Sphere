@@ -1,4 +1,4 @@
-# School Sphere Implementation Plan
+# EduPulse Implementation Plan
 
 This file turns the SRS into a step-by-step implementation task list.
 

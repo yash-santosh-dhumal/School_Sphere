@@ -58,6 +58,6 @@ app.include_router(reports_router, prefix=settings.api_v1_prefix)
 @app.get("/")
 def root() -> dict[str, str]:
     return {
-        "message": "School Sphere backend scaffold is ready.",
+        "message": "EduPulse backend scaffold is ready.",
         "health": f"{settings.api_v1_prefix}/health",
     }

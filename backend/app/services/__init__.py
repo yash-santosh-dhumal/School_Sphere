@@ -1,1 +1,1 @@
-"""Application service layer for School Sphere backend."""
+"""Application service layer for EduPulse backend."""

@@ -1,1 +1,1 @@
-"""API package for School Sphere backend routes."""
+"""API package for EduPulse backend routes."""

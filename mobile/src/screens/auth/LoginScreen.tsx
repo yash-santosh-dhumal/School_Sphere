@@ -62,7 +62,7 @@ export const LoginScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.hero}>
-        <Text style={styles.kicker}>School Sphere</Text>
+        <Text style={styles.kicker}>EduPulse</Text>
         <Text style={styles.title}>Welcome back</Text>
         <Text style={styles.subtitle}>Sign in to access your dashboard</Text>
       </View>

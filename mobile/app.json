@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "School Sphere",
-    "slug": "school-sphere-mobile",
+    "name": "EduPulse",
+    "slug": "edupulse-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

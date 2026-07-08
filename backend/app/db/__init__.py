@@ -1,1 +1,1 @@
-"""Database utilities for the School Sphere backend."""
+"""Database utilities for the EduPulse backend."""

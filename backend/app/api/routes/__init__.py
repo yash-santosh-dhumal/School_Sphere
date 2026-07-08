@@ -1,1 +1,1 @@
-"""Route modules for the School Sphere backend API."""
+"""Route modules for the EduPulse backend API."""

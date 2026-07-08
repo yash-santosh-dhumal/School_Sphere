@@ -1,1 +1,1 @@
-"""Pydantic schemas for the School Sphere backend."""
+"""Pydantic schemas for the EduPulse backend."""
