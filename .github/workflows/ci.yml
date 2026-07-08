@@ -1,4 +1,12 @@
-name: CI
+# ──────────────────────────────────────────────────
+#  EduPulse — CI/CD Pipeline
+# ──────────────────────────────────────────────────
+#  Triggers:
+#    - Push to main     → Test + Build + Deploy
+#    - Pull request     → Test + Lint only
+# ──────────────────────────────────────────────────
+
+name: CI/CD
 
 on:
   push:
@@ -6,8 +14,18 @@ on:
       - main
   pull_request:
 
+env:
+  PYTHON_VERSION: "3.12"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/edupulse-api
+
 jobs:
-  backend:
+
+  # ─────────────────────────────────────
+  #  Job 1: Lint
+  # ─────────────────────────────────────
+  lint:
+    name: 🔍 Lint
     runs-on: ubuntu-latest
 
     steps:
@@ -17,12 +35,164 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install backend dependencies
+      - name: Install linting tools
+        run: pip install ruff
+
+      - name: Run ruff linter
+        run: ruff check backend/app/ --output-format=github
+
+      - name: Run ruff formatter check
+        run: ruff format --check backend/app/
+
+  # ─────────────────────────────────────
+  #  Job 2: Test
+  # ─────────────────────────────────────
+  test:
+    name: 🧪 Test
+    runs-on: ubuntu-latest
+
+    env:
+      APP_ENV: testing
+      DEBUG: "true"
+      DATABASE_URL: "sqlite:///./test.db"
+      REDIS_URL: "redis://localhost:6379/0"
+      JWT_SECRET_KEY: "test-secret-key-must-be-at-least-32-characters-long"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
+          pip install pytest pytest-cov
 
       - name: Compile backend sources
         run: python -m compileall backend/app
+
+      - name: Run tests with coverage
+        working-directory: backend
+        run: |
+          python -m pytest tests/ -v \
+            --tb=short \
+            --cov=app \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term-missing
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: backend/coverage.xml
+
+  # ─────────────────────────────────────
+  #  Job 3: Build Docker Image
+  # ─────────────────────────────────────
+  build:
+    name: 🐳 Build
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─────────────────────────────────────
+  #  Job 4: Deploy to Production
+  # ─────────────────────────────────────
+  deploy:
+    name: 🚀 Deploy
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/EduPulse
+
+            # Pull latest code
+            git pull origin main
+
+            # Pull latest Docker images
+            docker compose pull
+
+            # Deploy with production overrides
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+
+            # Wait for API to be healthy
+            echo "Waiting for API health check..."
+            for i in $(seq 1 15); do
+              if curl -sf http://localhost/api/v1/health > /dev/null 2>&1; then
+                echo "✓ API is healthy!"
+                exit 0
+              fi
+              echo "Attempt $i/15 — waiting..."
+              sleep 5
+            done
+
+            echo "✗ Health check failed!"
+            docker compose logs api --tail 50
+            exit 1
+
+      - name: Notify deployment success
+        if: success()
+        run: echo "✅ Deployment to production successful!"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: echo "❌ Deployment to production failed!"

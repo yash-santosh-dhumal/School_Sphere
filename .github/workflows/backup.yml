@@ -1,0 +1,44 @@
+# ──────────────────────────────────────────────────
+#  EduPulse — Scheduled Database Backup
+# ──────────────────────────────────────────────────
+#  Runs daily at 2:00 AM UTC
+# ──────────────────────────────────────────────────
+
+name: Database Backup
+
+on:
+  schedule:
+    # Every day at 2:00 AM UTC
+    - cron: "0 2 * * *"
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  backup:
+    name: 💾 MySQL Backup
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Trigger backup via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/EduPulse
+
+            echo "Starting scheduled database backup..."
+            bash scripts/backup.sh
+
+            echo "Backup completed successfully."
+            ls -lh backups/ | tail -5
+
+      - name: Notify backup result
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Database backup completed successfully"
+          else
+            echo "❌ Database backup failed"
+          fi

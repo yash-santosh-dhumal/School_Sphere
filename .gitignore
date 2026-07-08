@@ -32,3 +32,13 @@ build/
 mobile/.dart_tool/
 mobile/.pub/
 mobile/build/
+
+# Backups
+backups/
+
+# SSL certificates
+nginx/ssl/*.pem
+nginx/ssl/*.key
+
+# Node modules
+node_modules/

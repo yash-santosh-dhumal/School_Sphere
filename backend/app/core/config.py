@@ -16,6 +16,14 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     cors_origins: list[str] = Field(default_factory=lambda: ["*"])
 
+    # ── Production tuning ──
+    gunicorn_workers: int = 4
+    celery_concurrency: int = 2
+    db_pool_size: int = 10
+    db_max_overflow: int = 20
+    db_pool_recycle: int = 1800  # Recycle connections every 30 min
+    redis_max_connections: int = 20
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -34,3 +42,4 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+

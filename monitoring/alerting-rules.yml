@@ -1,0 +1,108 @@
+# ──────────────────────────────────────────────────
+#  EduPulse — Prometheus Alerting Rules
+# ──────────────────────────────────────────────────
+
+groups:
+  - name: edupulse_api_alerts
+    rules:
+
+      # ── High API Error Rate ──
+      - alert: HighAPIErrorRate
+        expr: >
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High API error rate detected"
+          description: "More than 5% of API requests are returning 5xx errors for the last 5 minutes."
+
+      # ── API Response Time Too High ──
+      - alert: HighAPILatency
+        expr: >
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le)
+          ) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API latency"
+          description: "95th percentile API response time exceeds 2 seconds."
+
+      # ── API Service Down ──
+      - alert: APIServiceDown
+        expr: up{job="edupulse-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "EduPulse API is down"
+          description: "The EduPulse API service has been unreachable for more than 1 minute."
+
+  - name: edupulse_infrastructure_alerts
+    rules:
+
+      # ── High CPU Usage ──
+      - alert: HighCPUUsage
+        expr: >
+          100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage has been above 85% for more than 10 minutes."
+
+      # ── High Memory Usage ──
+      - alert: HighMemoryUsage
+        expr: >
+          (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage has been above 85% for more than 5 minutes."
+
+      # ── Low Disk Space ──
+      - alert: LowDiskSpace
+        expr: >
+          (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Less than 10% disk space remaining on the root partition."
+
+  - name: edupulse_container_alerts
+    rules:
+
+      # ── Container Restart Loop ──
+      - alert: ContainerRestartLoop
+        expr: >
+          increase(container_last_seen{name=~"edupulse-.*"}[15m]) < 1
+          and on(name) container_last_seen{name=~"edupulse-.*"}
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} may be restarting"
+          description: "Container {{ $labels.name }} hasn't been seen consistently in the last 15 minutes."
+
+      # ── Container High Memory ──
+      - alert: ContainerHighMemory
+        expr: >
+          (container_memory_usage_bytes{name=~"edupulse-.*"} /
+           container_spec_memory_limit_bytes{name=~"edupulse-.*"}) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} high memory usage"
+          description: "Container {{ $labels.name }} is using more than 90% of its memory limit."
